@@ -1,0 +1,19 @@
+{
+  "name": "PolyhedralSymmetry",
+  "version": "0.0.0",
+  "description": "A WebGL visualization of polyhedral symmetry on the sphere",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rtsao/polyhedral-symmetry.git"
+  },
+  "author": "Ryan Tsao <rtsao@scu.edu>",
+  "license": "MIT",
+  "devDependencies": {
+    "gulp": "~3.6.0",
+    "browserify": "~3.38.0",
+    "three": "~0.66.2"
+  }
+}
