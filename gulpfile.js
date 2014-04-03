@@ -18,7 +18,8 @@ gulp.task('html', function() {
 });
 
 gulp.task('watch', function() {
-	gulp.watch('src/*', ['scripts']);
+	gulp.watch(['src/*','!src/index.html'], ['scripts']);
+	gulp.watch('src/index.html', ['html']);
 });
 
 gulp.task('default', ['scripts', 'html', 'watch']);
