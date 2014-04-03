@@ -15,6 +15,36 @@ var WIDTH = window.innerWidth,
     NEAR = 1,
     FAR = 1000;
 
+
+//Renderer Setup
+var renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(WIDTH, HEIGHT);
+document.body.appendChild(renderer.domElement);
+
+// Texture rendering
+var RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
+
+var	uniforms = {
+		"group" : { type: "m3v",  value:groups.icosahedronGroup }
+	};
+
+var	RTcamera = new THREE.OrthographicCamera( -WIDTH*2, WIDTH*2, HEIGHT*2, -HEIGHT*2, 1, 1000 );
+RTcamera.position.z = 1;
+
+var RTscene= new THREE.Scene();
+RTscene.add(RTcamera);
+
+var	RTmaterial = new THREE.ShaderMaterial({
+		uniforms: uniforms,
+		vertexShader: shader.vertex,
+		fragmentShader: shader.fragment
+	});
+
+RTmesh = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), RTmaterial );
+RTscene.add( RTmesh );
+
+renderer.render( RTscene, RTcamera, RTtexture, true );
+
 //Camera Setup
 var camera = new THREE.PerspectiveCamera
 (
@@ -41,11 +71,5 @@ var sphere = new THREE.Mesh
 
 scene.add(sphere);
 scene.add(camera);
-
-//Renderer Setup
-var renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(WIDTH, HEIGHT);
-document.body.appendChild(renderer.domElement);
-
 
 renderer.render(scene, camera);
