@@ -25,7 +25,8 @@ document.body.appendChild(renderer.domElement);
 var RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 
 var	uniforms = {
-		"group" : { type: "m3v",  value:groups.icosahedronGroup }
+		"group" : { type: "m3v",  value:groups.icosahedronGroup },
+		"groupSize" : { type : "i", value:60 }
 	};
 
 var	RTcamera = new THREE.OrthographicCamera( -WIDTH*2, WIDTH*2, HEIGHT*2, -HEIGHT*2, 1, 1000 );
