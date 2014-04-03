@@ -7,6 +7,8 @@ var shader = {
 	fragment: fs.readFileSync(__dirname + '/painting.fragment.glsl','utf8')
 }
 
+var texture = THREE.ImageUtils.loadTexture('image1.jpg', null, render);
+
 //Settings
 var WIDTH = window.innerWidth,
     HEIGHT = window.innerHeight
@@ -15,6 +17,10 @@ var WIDTH = window.innerWidth,
     NEAR = 1,
     FAR = 1000;
 
+
+
+
+function render() {
 
 //Renderer Setup
 var renderer = new THREE.WebGLRenderer({antialias:true});
@@ -26,10 +32,11 @@ var RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT, { minFilter: THREE.L
 
 var	uniforms = {
 		"group" : { type: "m3v",  value:groups.icosahedronGroup },
-		"groupSize" : { type : "i", value:60 }
+		"groupSize" : { type : "i", value:60 },
+		"texture" : { type: "t", value:texture }
 	};
 
-var	RTcamera = new THREE.OrthographicCamera( -WIDTH*2, WIDTH*2, HEIGHT*2, -HEIGHT*2, 1, 1000 );
+var	RTcamera = new THREE.OrthographicCamera( -WIDTH/2, WIDTH/2, HEIGHT/2, -HEIGHT/2, 1, 100 );
 RTcamera.position.z = 1;
 
 var RTscene= new THREE.Scene();
@@ -41,8 +48,10 @@ var	RTmaterial = new THREE.ShaderMaterial({
 		fragmentShader: shader.fragment
 	});
 
-RTmesh = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), RTmaterial );
+RTmesh = new THREE.Mesh( new THREE.PlaneGeometry( WIDTH, HEIGHT ), RTmaterial );
 RTscene.add( RTmesh );
+
+//renderer.render(RTscene,RTcamera);
 
 renderer.render( RTscene, RTcamera, RTtexture, true );
 
@@ -55,14 +64,14 @@ var camera = new THREE.PerspectiveCamera
 	FAR
 );
 
-camera.position.z = 300;
+camera.position.z = 100;
 camera.lookAt( new THREE.Vector3( 0, 0, 0 ) );
 
 //Scene Setup
 var scene = new THREE.Scene();
 var radius = 50, segments = 60, rings = 60;
 
-var basicMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+var basicMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, map:RTtexture } );
 
 var sphere = new THREE.Mesh
 (
@@ -74,3 +83,7 @@ scene.add(sphere);
 scene.add(camera);
 
 renderer.render(scene, camera);
+
+
+}
+

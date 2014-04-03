@@ -8,7 +8,7 @@ precision highp float;
 varying vec2 vUv;
 uniform mat3 group[GROUP_MAX_SIZE];
 uniform int groupSize;
-uniform sampler2D uTex;
+uniform sampler2D texture;
 
 vec3 pointCartesian (float theta, float phi) {
 	return vec3(
@@ -41,15 +41,19 @@ void main()
 
 	vec4 sum = vec4(0.0,0.0,0.0,1.0);
 
-	for (int i=0; i<60; i++) {
+	for (int i=0; i<GROUP_MAX_SIZE; i++) {
+		if (i>=groupSize) {
+			break;
+		}
+
 		vec3 newpoint = group[i]*p;
 		vec2 xy = pointMap(newpoint.x,newpoint.y,newpoint.z);
-		sum=sum+texture2D(uTex, xy);
+		sum=sum+texture2D(texture, xy);
 	}
 
 	sum=sum/float(groupSize);
 
-	//vec4 color = texture2D(uTex, vUv);
+	//vec4 color = texture2D(texture, vUv);
 	gl_FragColor = sum;
 
 
