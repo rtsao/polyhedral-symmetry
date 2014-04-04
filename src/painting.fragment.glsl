@@ -53,7 +53,7 @@ void main()
 
 	sum=sum/float(groupSize);
 
-	//vec4 color = texture2D(texture, vUv);
+	//sum = texture2D(texture, vUv);
 	gl_FragColor = sum;
 
 
