@@ -1,6 +1,7 @@
 var fs = require('fs')
 ,	groups = require('./symmetryGroups')
-,	THREE = require('three');
+,	THREE = require('three')
+,	dat = require('dat-gui');
 
 THREE.OrbitControls = require('./OrbitControls');
 
@@ -9,7 +10,7 @@ var shader = {
 	fragment: fs.readFileSync(__dirname + '/painting.fragment.glsl','utf8')
 }
 
-var renderer, scene, camera;
+var renderer, scene, camera, sphere, texture, material, RTtexture, RTcamera, RTscene, RTmesh;
 
 //Settings
 var WIDTH = window.innerWidth,
@@ -19,40 +20,25 @@ var WIDTH = window.innerWidth,
     NEAR = 1,
     FAR = 1000;
 
+var options = {
+	texture: true,
+	image: 'image1.jpg',
+	group: 'tetrahedron'
+}
+
+var gui = new dat.GUI();
+
+var imageController = gui.add(options, 'image', [ 'image1.jpg', 'image2.jpg' ]);
+var groupController = gui.add(options, 'group', [ 'tetrahedron', 'cube', 'icosahedron' ]);
+gui.add(options, 'texture');
+
+imageController.onFinishChange(loadTextureSource);
+
 function init() {
 	//Renderer Setup
 	renderer = new THREE.WebGLRenderer({antialias:true});
 	renderer.setSize(WIDTH, HEIGHT);
 	document.body.appendChild(renderer.domElement);
-
-
-	// Texture rendering
-	var RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
-
-	var	uniforms = {
-			"group" : { type: "m3v",  value:groups.tetrahedronGroup },
-			"groupSize" : { type : "i", value:groups.tetrahedronGroup.length },
-			"texture" : { type: "t", value:texture }
-		};
-
-	var	RTcamera = new THREE.OrthographicCamera( -WIDTH/2, WIDTH/2, HEIGHT/2, -HEIGHT/2, 1, 100 );
-	RTcamera.position.z = 1;
-
-	var RTscene= new THREE.Scene();
-	RTscene.add(RTcamera);
-
-	var	RTmaterial = new THREE.ShaderMaterial({
-			uniforms: uniforms,
-			vertexShader: shader.vertex,
-			fragmentShader: shader.fragment
-		});
-
-	RTmesh = new THREE.Mesh( new THREE.PlaneGeometry( WIDTH, HEIGHT ), RTmaterial );
-	RTscene.add( RTmesh );
-
-	renderer.render( RTscene, RTcamera, RTtexture, true );
-
-
 
 	//Camera Setup
 	camera = new THREE.PerspectiveCamera
@@ -71,26 +57,62 @@ function init() {
 	scene = new THREE.Scene();
 	var radius = 50, segments = 60, rings = 60;
 
-	var basicMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, map:RTtexture } );
+	material= new THREE.MeshBasicMaterial( { color: 0xffffff } );
 
-	var sphere = new THREE.Mesh
+	sphere = new THREE.Mesh
 	(
 		new THREE.SphereGeometry(radius, segments, rings),
-		basicMaterial
+		material
 	);
 
 	scene.add(sphere);
 	scene.add(camera);
 
-	var controls = new THREE.OrbitControls( camera );
+	var controls = new THREE.OrbitControls( camera, renderer.domElement );
 	controls.noPan = true;
 
 	controls.addEventListener( 'change', render );
-	render();
 
 }
 
+function initTexture() {
+	RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 
+	RTcamera = new THREE.OrthographicCamera( -WIDTH/2, WIDTH/2, HEIGHT/2, -HEIGHT/2, 1, 100 );
+	RTcamera.position.z = 1;
+
+	RTscene= new THREE.Scene();
+	RTscene.add(RTcamera);
+
+	RTmaterial = new THREE.ShaderMaterial({
+			vertexShader: shader.vertex,
+			fragmentShader: shader.fragment
+	});
+
+	RTmesh = new THREE.Mesh( new THREE.PlaneGeometry( WIDTH, HEIGHT ), RTmaterial );
+	RTscene.add( RTmesh );
+
+}
+
+function renderTexture() {
+	
+	var	uniforms = {
+			"group" : { type: "m3v",  value:groups.tetrahedronGroup },
+			"groupSize" : { type : "i", value:groups.tetrahedronGroup.length },
+			"texture" : { type: "t", value:texture }
+	};
+
+	RTmesh.material.uniforms = uniforms;
+	RTmesh.material.needsUpdate = true;
+
+	renderer.render( RTscene, RTcamera, RTtexture, true );
+
+	sphere.material.map = RTtexture;
+	sphere.material.needsUpdate = true;
+
+	render();
+	
+}
 
 function render() {
 
@@ -98,6 +120,15 @@ function render() {
 
 }
 
-var texture = THREE.ImageUtils.loadTexture('image1.jpg', null, init);
+function loadTextureSource() {
+	texture = THREE.ImageUtils.loadTexture(options.image, null, renderTexture);
+}
+
+init();
+initTexture();
+loadTextureSource();
+
+
+
 
 

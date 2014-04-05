@@ -7,7 +7,7 @@ var gulp = require('gulp')
 gulp.task('scripts', function() {
 	gulp.src('src/app.js')
 		.pipe(browserify({transform:['brfs']}))
-		.pipe(uglify())
+		//.pipe(uglify())
 		.pipe(rename('bundle.js'))
 		.pipe(gulp.dest('build/'))
 });
