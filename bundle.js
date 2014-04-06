@@ -43743,9 +43743,8 @@ module.exports = THREE.OrbitControls;
 var fs = require('fs')
 ,	groups = require('./symmetryGroups')
 ,	THREE = require('three')
-,	dat = require('dat-gui');
-
-THREE.OrbitControls = require('./OrbitControls');
+,	dat = require('dat-gui')
+,	orbitControls = require('./OrbitControls');
 
 var shader = {
 	vertex: "#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vUv;\n\nvoid main()\n{\n\tvUv = uv;\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);\n\t\n}",
@@ -43763,33 +43762,29 @@ var WIDTH = window.innerWidth,
     FAR = 1000;
 
 var options = {
-	texture: true,
+	sphere: true,
 	image: 'image1.jpg',
 	group: 'tetrahedron'
 }
 
 var gui = new dat.GUI();
 
-var imageController = gui.add(options, 'image', [ 'image1.jpg', 'image2.jpg' ]);
-var groupController = gui.add(options, 'group', [ 'tetrahedron', 'cube', 'icosahedron' ]);
-gui.add(options, 'texture');
+var imageController = gui.add( options, 'image', [ 'image1.jpg', 'image2.jpg' ] );
+var groupController = gui.add( options, 'group', [ 'tetrahedron', 'cube', 'icosahedron' ] );
+var sphereController = gui.add( options, 'sphere' );
 
-imageController.onFinishChange(loadTextureSource);
+imageController.onFinishChange( loadTextureSource );
+groupController.onFinishChange( loadTextureSource );
+sphereController.onFinishChange( render );
 
 function init() {
 	//Renderer Setup
-	renderer = new THREE.WebGLRenderer({antialias:true});
-	renderer.setSize(WIDTH, HEIGHT);
-	document.body.appendChild(renderer.domElement);
+	renderer = new THREE.WebGLRenderer( {antialias:true} );
+	renderer.setSize( WIDTH, HEIGHT );
+	document.body.appendChild( renderer.domElement );
 
 	//Camera Setup
-	camera = new THREE.PerspectiveCamera
-	(
-		FOV,
-		ASPECT,
-		NEAR,
-		FAR
-	);
+	camera = new THREE.PerspectiveCamera( FOV, ASPECT, NEAR, FAR );
 
 	camera.position.z = 200;
 	camera.lookAt( new THREE.Vector3( 0, 0, 0 ) );
@@ -43803,14 +43798,14 @@ function init() {
 
 	sphere = new THREE.Mesh
 	(
-		new THREE.SphereGeometry(radius, segments, rings),
+		new THREE.SphereGeometry( radius, segments, rings ),
 		material
 	);
 
-	scene.add(sphere);
-	scene.add(camera);
+	scene.add( sphere );
+	scene.add( camera );
 
-	var controls = new THREE.OrbitControls( camera, renderer.domElement );
+	var controls = new orbitControls( camera, renderer.domElement );
 	controls.noPan = true;
 
 	controls.addEventListener( 'change', render );
@@ -43818,13 +43813,13 @@ function init() {
 }
 
 function initTexture() {
-	RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
+	RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT );
 
 	RTcamera = new THREE.OrthographicCamera( -WIDTH/2, WIDTH/2, HEIGHT/2, -HEIGHT/2, 1, 100 );
 	RTcamera.position.z = 1;
 
 	RTscene= new THREE.Scene();
-	RTscene.add(RTcamera);
+	RTscene.add( RTcamera );
 
 	RTmaterial = new THREE.ShaderMaterial({
 			vertexShader: shader.vertex,
@@ -43837,10 +43832,10 @@ function initTexture() {
 }
 
 function renderTexture() {
-	
+
 	var	uniforms = {
-			"group" : { type: "m3v",  value:groups.tetrahedronGroup },
-			"groupSize" : { type : "i", value:groups.tetrahedronGroup.length },
+			"group" : { type: "m3v",  value:groups[options.group] },
+			"groupSize" : { type : "i", value:groups[options.group].length },
 			"texture" : { type: "t", value:texture }
 	};
 
@@ -43858,23 +43853,23 @@ function renderTexture() {
 
 function render() {
 
-	renderer.render(scene, camera);
+	if (options.sphere) {
+		renderer.render( scene, camera );
+	}
+	else {
+		renderer.render( RTscene, RTcamera );
+	}
+	
 
 }
 
 function loadTextureSource() {
-	texture = THREE.ImageUtils.loadTexture(options.image, null, renderTexture);
+	texture = THREE.ImageUtils.loadTexture( options.image, null, renderTexture );
 }
 
 init();
 initTexture();
 loadTextureSource();
-
-
-
-
-
-
 },{"./OrbitControls":6,"./symmetryGroups":8,"dat-gui":1,"fs":4,"three":5}],8:[function(require,module,exports){
 var THREE = require('three');
 
@@ -43883,9 +43878,9 @@ var TETRAHEDRON_GROUP = [-0.5,-0.5,-0.7071067811865475,0.5,0.5,-0.70710678118654
 var CUBE_GROUP = [1,0,0,0,-1,0,0,0,-1,1,0,0,0,0,1,0,-1,0,0,-1,0,1,0,0,0,0,1,0,0,-1,0,1,0,1,0,0,0,1,0,1,0,0,0,0,-1,-1,0,0,0,1,0,0,0,-1,0,-1,0,0,0,-1,1,0,0,-1,0,0,0,-1,0,0,0,1,0,0,-1,1,0,0,0,-1,0,0,0,1,1,0,0,0,1,0,1,0,0,0,0,-1,0,1,0,-1,0,0,0,0,1,0,1,0,-1,0,0,0,0,-1,0,-1,0,0,0,1,0,-1,0,1,0,0,1,0,0,0,1,0,0,0,1,0,0,1,-1,0,0,0,-1,0,0,0,1,0,1,0,-1,0,0,0,-1,0,-1,0,0,0,0,-1,0,1,0,0,0,-1,-1,0,0,0,1,0,0,0,1,1,0,0,0,0,-1,-1,0,0,0,1,0,0,1,0,-1,0,0,0,0,1,0,-1,0,0,0,1,-1,0,0,0,0,-1,0,-1,0,-1,0,0];
 var ICOSAHEDRON_GROUP = [-1,0,0,0,-1,0,0,0,1,-1,0,0,0,1,0,0,0,-1,-0.5,-0.309017,-0.809017,-0.309017,-0.809017,0.5,-0.809017,0.5,0.309017,-0.5,-0.309017,-0.809017,0.309017,0.809017,-0.5,0.809017,-0.5,-0.309017,-0.5,-0.309017,0.809017,-0.309017,-0.809017,-0.5,0.809017,-0.5,0.309017,-0.5,-0.309017,0.809017,0.309017,0.809017,0.5,-0.809017,0.5,-0.309017,-0.5,0.309017,-0.809017,-0.309017,0.809017,0.5,0.809017,0.5,-0.309017,-0.5,0.309017,-0.809017,0.309017,-0.809017,-0.5,-0.809017,-0.5,0.309017,-0.5,0.309017,0.809017,-0.309017,0.809017,-0.5,-0.809017,-0.5,-0.309017,-0.5,0.309017,0.809017,0.309017,-0.809017,0.5,0.809017,0.5,0.309017,0,-1,0,0,0,-1,1,0,0,0,-1,0,0,0,1,-1,0,0,0,0,-1,-1,0,0,0,1,0,0,0,-1,1,0,0,0,-1,0,0,0,1,-1,0,0,0,-1,0,0,0,1,1,0,0,0,1,0,0,1,0,0,0,-1,-1,0,0,0,1,0,0,0,1,1,0,0,0.5,-0.309017,-0.809017,-0.309017,0.809017,-0.5,0.809017,0.5,0.309017,0.5,-0.309017,-0.809017,0.309017,-0.809017,0.5,-0.809017,-0.5,-0.309017,0.5,-0.309017,0.809017,-0.309017,0.809017,0.5,-0.809017,-0.5,0.309017,0.5,-0.309017,0.809017,0.309017,-0.809017,-0.5,0.809017,0.5,-0.309017,0.5,0.309017,-0.809017,-0.309017,-0.809017,-0.5,-0.809017,0.5,-0.309017,0.5,0.309017,-0.809017,0.309017,0.809017,0.5,0.809017,-0.5,0.309017,0.5,0.309017,0.809017,-0.309017,-0.809017,0.5,0.809017,-0.5,-0.309017,0.5,0.309017,0.809017,0.309017,0.809017,-0.5,-0.809017,0.5,0.309017,1,0,0,0,-1,0,0,0,-1,1,0,0,0,1,0,0,0,1,-0.809017,-0.5,-0.309017,-0.5,0.309017,0.809017,-0.309017,0.809017,-0.5,-0.809017,-0.5,-0.309017,0.5,-0.309017,-0.809017,0.309017,-0.809017,0.5,-0.809017,-0.5,0.309017,-0.5,0.309017,-0.809017,0.309017,-0.809017,-0.5,-0.809017,-0.5,0.309017,0.5,-0.309017,0.809017,-0.309017,0.809017,0.5,-0.809017,0.5,-0.309017,-0.5,-0.309017,0.809017,0.309017,0.809017,0.5,-0.809017,0.5,-0.309017,0.5,0.309017,-0.809017,-0.309017,-0.809017,-0.5,-0.809017,0.5,0.309017,-0.5,-0.309017,-0.809017,-0.309017,-0.809017,0.5,-0.809017,0.5,0.309017,0.5,0.309017,0.809017,0.309017,0.809017,-0.5,-0.309017,-0.809017,-0.5,-0.809017,0.5,-0.309017,0.5,0.309017,-0.809017,-0.309017,-0.809017,-0.5,0.809017,-0.5,0.309017,-0.5,-0.309017,0.809017,-0.309017,-0.809017,0.5,-0.809017,0.5,0.309017,-0.5,-0.309017,-0.809017,-0.309017,-0.809017,0.5,0.809017,-0.5,-0.309017,0.5,0.309017,0.809017,-0.309017,0.809017,-0.5,-0.809017,-0.5,-0.309017,-0.5,0.309017,0.809017,-0.309017,0.809017,-0.5,0.809017,0.5,0.309017,0.5,-0.309017,-0.809017,-0.309017,0.809017,0.5,-0.809017,-0.5,0.309017,0.5,-0.309017,0.809017,-0.309017,0.809017,0.5,0.809017,0.5,-0.309017,-0.5,0.309017,-0.809017,0.309017,-0.809017,-0.5,-0.809017,-0.5,0.309017,-0.5,0.309017,-0.809017,0.309017,-0.809017,-0.5,0.809017,0.5,-0.309017,0.5,-0.309017,0.809017,0.309017,-0.809017,0.5,-0.809017,-0.5,-0.309017,0.5,-0.309017,-0.809017,0.309017,-0.809017,0.5,0.809017,0.5,0.309017,-0.5,0.309017,0.809017,0.309017,0.809017,-0.5,-0.809017,0.5,0.309017,0.5,0.309017,0.809017,0.309017,0.809017,-0.5,0.809017,-0.5,-0.309017,-0.5,-0.309017,-0.809017,0.309017,0.809017,0.5,-0.809017,0.5,-0.309017,-0.5,-0.309017,0.809017,0.309017,0.809017,0.5,0.809017,-0.5,0.309017,0.5,0.309017,-0.809017,0.809017,-0.5,-0.309017,-0.5,-0.309017,-0.809017,0.309017,0.809017,-0.5,0.809017,-0.5,-0.309017,0.5,0.309017,0.809017,-0.309017,-0.809017,0.5,0.809017,-0.5,0.309017,-0.5,-0.309017,0.809017,-0.309017,-0.809017,-0.5,0.809017,-0.5,0.309017,0.5,0.309017,-0.809017,0.309017,0.809017,0.5,0.809017,0.5,-0.309017,-0.5,0.309017,-0.809017,-0.309017,0.809017,0.5,0.809017,0.5,-0.309017,0.5,-0.309017,0.809017,0.309017,-0.809017,-0.5,0.809017,0.5,0.309017,-0.5,0.309017,0.809017,0.309017,-0.809017,0.5,0.809017,0.5,0.309017,0.5,-0.309017,-0.809017,-0.309017,0.809017,-0.5];
 
-exports.tetrahedronGroup = chunk(TETRAHEDRON_GROUP,9).map(newMat3);
-exports.cubeGroup = chunk(CUBE_GROUP,9).map(newMat3);
-exports.icosahedronGroup = chunk(ICOSAHEDRON_GROUP,9).map(newMat3);
+exports.tetrahedron = chunk(TETRAHEDRON_GROUP,9).map(newMat3);
+exports.cube = chunk(CUBE_GROUP,9).map(newMat3);
+exports.icosahedron = chunk(ICOSAHEDRON_GROUP,9).map(newMat3);
 
 function chunk(array,n) {
 
