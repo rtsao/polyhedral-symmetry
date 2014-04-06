@@ -1,13 +1,12 @@
 var fs = require('fs')
 ,	groups = require('./symmetryGroups')
 ,	THREE = require('three')
-,	dat = require('dat-gui');
-
-THREE.OrbitControls = require('./OrbitControls');
+,	dat = require('dat-gui')
+,	orbitControls = require('./OrbitControls');
 
 var shader = {
-	vertex: fs.readFileSync(__dirname + '/painting.vertex.glsl','utf8'),
-	fragment: fs.readFileSync(__dirname + '/painting.fragment.glsl','utf8')
+	vertex: fs.readFileSync( __dirname + '/painting.vertex.glsl', 'utf8' ),
+	fragment: fs.readFileSync( __dirname + '/painting.fragment.glsl', 'utf8' )
 }
 
 var renderer, scene, camera, sphere, texture, material, RTtexture, RTcamera, RTscene, RTmesh;
@@ -21,33 +20,29 @@ var WIDTH = window.innerWidth,
     FAR = 1000;
 
 var options = {
-	texture: true,
+	sphere: true,
 	image: 'image1.jpg',
 	group: 'tetrahedron'
 }
 
 var gui = new dat.GUI();
 
-var imageController = gui.add(options, 'image', [ 'image1.jpg', 'image2.jpg' ]);
-var groupController = gui.add(options, 'group', [ 'tetrahedron', 'cube', 'icosahedron' ]);
-gui.add(options, 'texture');
+var imageController = gui.add( options, 'image', [ 'image1.jpg', 'image2.jpg' ] );
+var groupController = gui.add( options, 'group', [ 'tetrahedron', 'cube', 'icosahedron' ] );
+var sphereController = gui.add( options, 'sphere' );
 
-imageController.onFinishChange(loadTextureSource);
+imageController.onFinishChange( loadTextureSource );
+groupController.onFinishChange( loadTextureSource );
+sphereController.onFinishChange( render );
 
 function init() {
 	//Renderer Setup
-	renderer = new THREE.WebGLRenderer({antialias:true});
-	renderer.setSize(WIDTH, HEIGHT);
-	document.body.appendChild(renderer.domElement);
+	renderer = new THREE.WebGLRenderer( {antialias:true} );
+	renderer.setSize( WIDTH, HEIGHT );
+	document.body.appendChild( renderer.domElement );
 
 	//Camera Setup
-	camera = new THREE.PerspectiveCamera
-	(
-		FOV,
-		ASPECT,
-		NEAR,
-		FAR
-	);
+	camera = new THREE.PerspectiveCamera( FOV, ASPECT, NEAR, FAR );
 
 	camera.position.z = 200;
 	camera.lookAt( new THREE.Vector3( 0, 0, 0 ) );
@@ -61,14 +56,14 @@ function init() {
 
 	sphere = new THREE.Mesh
 	(
-		new THREE.SphereGeometry(radius, segments, rings),
+		new THREE.SphereGeometry( radius, segments, rings ),
 		material
 	);
 
-	scene.add(sphere);
-	scene.add(camera);
+	scene.add( sphere );
+	scene.add( camera );
 
-	var controls = new THREE.OrbitControls( camera, renderer.domElement );
+	var controls = new orbitControls( camera, renderer.domElement );
 	controls.noPan = true;
 
 	controls.addEventListener( 'change', render );
@@ -76,13 +71,13 @@ function init() {
 }
 
 function initTexture() {
-	RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
+	RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT );
 
 	RTcamera = new THREE.OrthographicCamera( -WIDTH/2, WIDTH/2, HEIGHT/2, -HEIGHT/2, 1, 100 );
 	RTcamera.position.z = 1;
 
 	RTscene= new THREE.Scene();
-	RTscene.add(RTcamera);
+	RTscene.add( RTcamera );
 
 	RTmaterial = new THREE.ShaderMaterial({
 			vertexShader: shader.vertex,
@@ -95,10 +90,10 @@ function initTexture() {
 }
 
 function renderTexture() {
-	
+
 	var	uniforms = {
-			"group" : { type: "m3v",  value:groups.tetrahedronGroup },
-			"groupSize" : { type : "i", value:groups.tetrahedronGroup.length },
+			"group" : { type: "m3v",  value:groups[options.group] },
+			"groupSize" : { type : "i", value:groups[options.group].length },
 			"texture" : { type: "t", value:texture }
 	};
 
@@ -116,19 +111,20 @@ function renderTexture() {
 
 function render() {
 
-	renderer.render(scene, camera);
+	if (options.sphere) {
+		renderer.render( scene, camera );
+	}
+	else {
+		renderer.render( RTscene, RTcamera );
+	}
+	
 
 }
 
 function loadTextureSource() {
-	texture = THREE.ImageUtils.loadTexture(options.image, null, renderTexture);
+	texture = THREE.ImageUtils.loadTexture( options.image, null, renderTexture );
 }
 
 init();
 initTexture();
 loadTextureSource();
-
-
-
-
-
