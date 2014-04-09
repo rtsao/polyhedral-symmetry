@@ -8,6 +8,8 @@ precision highp float;
 varying vec2 vUv;
 uniform mat3 group[GROUP_MAX_SIZE];
 uniform int groupSize;
+uniform float shiftX;
+uniform float shiftY;
 uniform sampler2D texture;
 
 vec3 pointCartesian (float theta, float phi) {
@@ -21,9 +23,12 @@ vec3 pointCartesian (float theta, float phi) {
 //maybe make function to return color directly instead?
 
 vec2 pointMap (float x, float y, float z) {
-	float phi = atan(y,x);
-		float theta = acos(z);
-	return vec2(theta/(2.*PI),phi/PI);
+	float theta = atan(y,x)+PI;
+	float phi = acos(z);
+	return vec2(
+		mod( theta/(2.*PI) + shiftX , 1.0),
+		mod( phi/PI + shiftY , 1.0)
+	);
 }
 
 

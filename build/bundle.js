@@ -43748,7 +43748,7 @@ var fs = require('fs')
 
 var shader = {
 	vertex: "#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vUv;\n\nvoid main()\n{\n\tvUv = uv;\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);\n\t\n}",
-	fragment: "#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define PI 3.1415926535897932384626433832795\n#define GROUP_MAX_SIZE 60\n\nvarying vec2 vUv;\nuniform mat3 group[GROUP_MAX_SIZE];\nuniform int groupSize;\nuniform sampler2D texture;\n\nvec3 pointCartesian (float theta, float phi) {\n\treturn vec3(\n\t\tcos(theta)*sin(phi),\n\t\tsin(theta)*sin(phi),\n\t\tcos(phi)\n\t);\n}\n\n//maybe make function to return color directly instead?\n\nvec2 pointMap (float x, float y, float z) {\n\tfloat phi = atan(y,x);\n\t\tfloat theta = acos(z);\n\treturn vec2(theta/(2.*PI),phi/PI);\n}\n\n\n\nvoid main()\n{\n\n\tfloat u = vUv.x;\n\tfloat v = vUv.y;\n\n\tfloat theta = 2.*PI*u;\n\tfloat phi = PI*v;\n\n\tvec3 p = pointCartesian(theta,phi);\n\n\tvec4 sum = vec4(0.0,0.0,0.0,1.0);\n\n\tfor (int i=0; i<GROUP_MAX_SIZE; i++) {\n\t\tif (i>=groupSize) {\n\t\t\tbreak;\n\t\t}\n\n\t\tvec3 newpoint = group[i]*p;\n\t\tvec2 xy = pointMap(newpoint.x,newpoint.y,newpoint.z);\n\t\tsum=sum+texture2D(texture, xy);\n\t}\n\n\tsum=sum/float(groupSize);\n\n\t//sum = texture2D(texture, vUv);\n\tgl_FragColor = sum;\n\n\n}"
+	fragment: "#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define PI 3.1415926535897932384626433832795\n#define GROUP_MAX_SIZE 60\n\nvarying vec2 vUv;\nuniform mat3 group[GROUP_MAX_SIZE];\nuniform int groupSize;\nuniform float shiftX;\nuniform float shiftY;\nuniform sampler2D texture;\n\nvec3 pointCartesian (float theta, float phi) {\n\treturn vec3(\n\t\tcos(theta)*sin(phi),\n\t\tsin(theta)*sin(phi),\n\t\tcos(phi)\n\t);\n}\n\n//maybe make function to return color directly instead?\n\nvec2 pointMap (float x, float y, float z) {\n\tfloat theta = atan(y,x)+PI;\n\tfloat phi = acos(z);\n\treturn vec2(\n\t\tmod( theta/(2.*PI) + shiftX , 1.0),\n\t\tmod( phi/PI + shiftY , 1.0)\n\t);\n}\n\n\n\nvoid main()\n{\n\n\tfloat u = vUv.x;\n\tfloat v = vUv.y;\n\n\tfloat theta = 2.*PI*u;\n\tfloat phi = PI*v;\n\n\tvec3 p = pointCartesian(theta,phi);\n\n\tvec4 sum = vec4(0.0,0.0,0.0,1.0);\n\n\tfor (int i=0; i<GROUP_MAX_SIZE; i++) {\n\t\tif (i>=groupSize) {\n\t\t\tbreak;\n\t\t}\n\n\t\tvec3 newpoint = group[i]*p;\n\t\tvec2 xy = pointMap(newpoint.x,newpoint.y,newpoint.z);\n\t\tsum=sum+texture2D(texture, xy);\n\t}\n\n\tsum=sum/float(groupSize);\n\n\t//sum = texture2D(texture, vUv);\n\tgl_FragColor = sum;\n\n\n}"
 }
 
 var renderer, scene, camera, sphere, texture, material, RTtexture, RTcamera, RTscene, RTmesh;
@@ -43763,18 +43763,24 @@ var WIDTH = window.innerWidth,
 
 var options = {
 	sphere: true,
-	image: 'image1.jpg',
-	group: 'tetrahedron'
+	image: 'image3.jpg',
+	group: 'tetrahedron',
+	shiftX: 0.00,
+	shiftY: 0.00
 }
 
 var gui = new dat.GUI();
 
-var imageController = gui.add( options, 'image', [ 'image1.jpg', 'image2.jpg' ] );
-var groupController = gui.add( options, 'group', [ 'tetrahedron', 'cube', 'icosahedron' ] );
+var imageController = gui.add( options, 'image', [ 'image1.jpg', 'image2.jpg', 'image3.jpg' ] );
+var groupController = gui.add( options, 'group', [ 'tetrahedron', 'cube', 'icosahedron', 'none' ] );
 var sphereController = gui.add( options, 'sphere' );
+var shiftXController = gui.add( options, 'shiftX', 0, 1.0 );
+var shiftYController = gui.add( options, 'shiftY', 0, 1.0 );
 
 imageController.onFinishChange( loadTextureSource );
 groupController.onFinishChange( loadTextureSource );
+shiftXController.onChange( loadTextureSource );
+shiftYController.onChange( loadTextureSource );
 sphereController.onFinishChange( render );
 
 function init() {
@@ -43813,7 +43819,7 @@ function init() {
 }
 
 function initTexture() {
-	RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT );
+	RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 
 	RTcamera = new THREE.OrthographicCamera( -WIDTH/2, WIDTH/2, HEIGHT/2, -HEIGHT/2, 1, 100 );
 	RTcamera.position.z = 1;
@@ -43836,7 +43842,9 @@ function renderTexture() {
 	var	uniforms = {
 			"group" : { type: "m3v",  value:groups[options.group] },
 			"groupSize" : { type : "i", value:groups[options.group].length },
-			"texture" : { type: "t", value:texture }
+			"texture" : { type: "t", value:texture },
+			"shiftX" : { type: "f", value:options.shiftX },
+			"shiftY" : { type: "f", value:options.shiftY }
 	};
 
 	RTmesh.material.uniforms = uniforms;
@@ -43870,6 +43878,12 @@ function loadTextureSource() {
 init();
 initTexture();
 loadTextureSource();
+
+
+
+
+
+
 },{"./OrbitControls":6,"./symmetryGroups":8,"dat-gui":1,"fs":4,"three":5}],8:[function(require,module,exports){
 var THREE = require('three');
 
@@ -43881,6 +43895,7 @@ var ICOSAHEDRON_GROUP = [-1,0,0,0,-1,0,0,0,1,-1,0,0,0,1,0,0,0,-1,-0.5,-0.309017,
 exports.tetrahedron = chunk(TETRAHEDRON_GROUP,9).map(newMat3);
 exports.cube = chunk(CUBE_GROUP,9).map(newMat3);
 exports.icosahedron = chunk(ICOSAHEDRON_GROUP,9).map(newMat3);
+exports.none = [new THREE.Matrix3()];
 
 function chunk(array,n) {
 

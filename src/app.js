@@ -21,18 +21,24 @@ var WIDTH = window.innerWidth,
 
 var options = {
 	sphere: true,
-	image: 'image1.jpg',
-	group: 'tetrahedron'
+	image: 'image3.jpg',
+	group: 'tetrahedron',
+	shiftX: 0.00,
+	shiftY: 0.00
 }
 
 var gui = new dat.GUI();
 
-var imageController = gui.add( options, 'image', [ 'image1.jpg', 'image2.jpg' ] );
-var groupController = gui.add( options, 'group', [ 'tetrahedron', 'cube', 'icosahedron' ] );
+var imageController = gui.add( options, 'image', [ 'image1.jpg', 'image2.jpg', 'image3.jpg' ] );
+var groupController = gui.add( options, 'group', [ 'tetrahedron', 'cube', 'icosahedron', 'none' ] );
 var sphereController = gui.add( options, 'sphere' );
+var shiftXController = gui.add( options, 'shiftX', 0, 1.0 );
+var shiftYController = gui.add( options, 'shiftY', 0, 1.0 );
 
 imageController.onFinishChange( loadTextureSource );
 groupController.onFinishChange( loadTextureSource );
+shiftXController.onChange( loadTextureSource );
+shiftYController.onChange( loadTextureSource );
 sphereController.onFinishChange( render );
 
 function init() {
@@ -71,7 +77,7 @@ function init() {
 }
 
 function initTexture() {
-	RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT );
+	RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 
 	RTcamera = new THREE.OrthographicCamera( -WIDTH/2, WIDTH/2, HEIGHT/2, -HEIGHT/2, 1, 100 );
 	RTcamera.position.z = 1;
@@ -94,7 +100,9 @@ function renderTexture() {
 	var	uniforms = {
 			"group" : { type: "m3v",  value:groups[options.group] },
 			"groupSize" : { type : "i", value:groups[options.group].length },
-			"texture" : { type: "t", value:texture }
+			"texture" : { type: "t", value:texture },
+			"shiftX" : { type: "f", value:options.shiftX },
+			"shiftY" : { type: "f", value:options.shiftY }
 	};
 
 	RTmesh.material.uniforms = uniforms;
@@ -128,3 +136,8 @@ function loadTextureSource() {
 init();
 initTexture();
 loadTextureSource();
+
+
+
+
+

@@ -8,6 +8,7 @@ var ICOSAHEDRON_GROUP = [-1,0,0,0,-1,0,0,0,1,-1,0,0,0,1,0,0,0,-1,-0.5,-0.309017,
 exports.tetrahedron = chunk(TETRAHEDRON_GROUP,9).map(newMat3);
 exports.cube = chunk(CUBE_GROUP,9).map(newMat3);
 exports.icosahedron = chunk(ICOSAHEDRON_GROUP,9).map(newMat3);
+exports.none = [new THREE.Matrix3()];
 
 function chunk(array,n) {
 
