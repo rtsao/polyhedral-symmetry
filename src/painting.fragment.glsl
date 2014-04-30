@@ -20,7 +20,6 @@ vec3 pointCartesian (float theta, float phi) {
 	);
 }
 
-//maybe make function to return color directly instead?
 
 vec2 pointMap (float x, float y, float z) {
 	float theta = atan(y,x)+PI;
@@ -58,7 +57,6 @@ void main()
 
 	sum=sum/float(groupSize);
 
-	//sum = texture2D(texture, vUv);
 	gl_FragColor = sum;
 
 

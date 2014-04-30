@@ -29,7 +29,7 @@ var options = {
 
 var gui = new dat.GUI();
 
-var imageController = gui.add( options, 'image', [ 'image1.jpg', 'image2.jpg', 'image3.jpg' ] );
+var imageController = gui.add( options, 'image', [ 'image1.jpg', 'image2.jpg', 'image3.jpg','image4.jpg','image5.jpg','image6.jpg','image7.jpg','image8.jpg','image9.jpg'   ] );
 var groupController = gui.add( options, 'group', [ 'tetrahedron', 'tetrahedronMirror', 'cube', 'cubeMirror', 'icosahedron', 'none' ] );
 var sphereController = gui.add( options, 'sphere' );
 var shiftXController = gui.add( options, 'shiftX', 0, 1.0 );

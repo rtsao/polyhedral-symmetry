@@ -43748,7 +43748,7 @@ var fs = require('fs')
 
 var shader = {
 	vertex: "#ifdef GL_ES\nprecision highp float;\n#endif\n\nvarying vec2 vUv;\n\nvoid main()\n{\n\tvUv = uv;\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);\n\t\n}",
-	fragment: "#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define PI 3.1415926535897932384626433832795\n#define GROUP_MAX_SIZE 60\n\nvarying vec2 vUv;\nuniform mat3 group[GROUP_MAX_SIZE];\nuniform int groupSize;\nuniform float shiftX;\nuniform float shiftY;\nuniform sampler2D texture;\n\nvec3 pointCartesian (float theta, float phi) {\n\treturn vec3(\n\t\tcos(theta)*sin(phi),\n\t\tsin(theta)*sin(phi),\n\t\tcos(phi)\n\t);\n}\n\n//maybe make function to return color directly instead?\n\nvec2 pointMap (float x, float y, float z) {\n\tfloat theta = atan(y,x)+PI;\n\tfloat phi = acos(z);\n\treturn vec2(\n\t\tmod( theta/(2.*PI) + shiftX , 1.0),\n\t\tmod( phi/PI + shiftY , 1.0)\n\t);\n}\n\n\n\nvoid main()\n{\n\n\tfloat u = vUv.x;\n\tfloat v = vUv.y;\n\n\tfloat theta = 2.*PI*u;\n\tfloat phi = PI*v;\n\n\tvec3 p = pointCartesian(theta,phi);\n\n\tvec4 sum = vec4(0.0,0.0,0.0,1.0);\n\n\tfor (int i=0; i<GROUP_MAX_SIZE; i++) {\n\t\tif (i>=groupSize) {\n\t\t\tbreak;\n\t\t}\n\n\t\tvec3 newpoint = group[i]*p;\n\t\tvec2 xy = pointMap(newpoint.x,newpoint.y,newpoint.z);\n\t\tsum=sum+texture2D(texture, xy);\n\t}\n\n\tsum=sum/float(groupSize);\n\n\t//sum = texture2D(texture, vUv);\n\tgl_FragColor = sum;\n\n\n}"
+	fragment: "#ifdef GL_ES\nprecision highp float;\n#endif\n\n#define PI 3.1415926535897932384626433832795\n#define GROUP_MAX_SIZE 60\n\nvarying vec2 vUv;\nuniform mat3 group[GROUP_MAX_SIZE];\nuniform int groupSize;\nuniform float shiftX;\nuniform float shiftY;\nuniform sampler2D texture;\n\nvec3 pointCartesian (float theta, float phi) {\n\treturn vec3(\n\t\tcos(theta)*sin(phi),\n\t\tsin(theta)*sin(phi),\n\t\tcos(phi)\n\t);\n}\n\n\nvec2 pointMap (float x, float y, float z) {\n\tfloat theta = atan(y,x)+PI;\n\tfloat phi = acos(z);\n\treturn vec2(\n\t\tmod( theta/(2.*PI) + shiftX , 1.0),\n\t\tmod( phi/PI + shiftY , 1.0)\n\t);\n}\n\n\n\nvoid main()\n{\n\n\tfloat u = vUv.x;\n\tfloat v = vUv.y;\n\n\tfloat theta = 2.*PI*u;\n\tfloat phi = PI*v;\n\n\tvec3 p = pointCartesian(theta,phi);\n\n\tvec4 sum = vec4(0.0,0.0,0.0,1.0);\n\n\tfor (int i=0; i<GROUP_MAX_SIZE; i++) {\n\t\tif (i>=groupSize) {\n\t\t\tbreak;\n\t\t}\n\n\t\tvec3 newpoint = group[i]*p;\n\t\tvec2 xy = pointMap(newpoint.x,newpoint.y,newpoint.z);\n\t\tsum=sum+texture2D(texture, xy);\n\t}\n\n\tsum=sum/float(groupSize);\n\n\tgl_FragColor = sum;\n\n\n}"
 }
 
 var renderer, scene, camera, sphere, texture, material, RTtexture, RTcamera, RTscene, RTmesh;
@@ -43771,7 +43771,7 @@ var options = {
 
 var gui = new dat.GUI();
 
-var imageController = gui.add( options, 'image', [ 'image1.jpg', 'image2.jpg', 'image3.jpg' ] );
+var imageController = gui.add( options, 'image', [ 'image1.jpg', 'image2.jpg', 'image3.jpg','image4.jpg','image5.jpg','image6.jpg','image7.jpg','image8.jpg','image9.jpg'   ] );
 var groupController = gui.add( options, 'group', [ 'tetrahedron', 'tetrahedronMirror', 'cube', 'cubeMirror', 'icosahedron', 'none' ] );
 var sphereController = gui.add( options, 'sphere' );
 var shiftXController = gui.add( options, 'shiftX', 0, 1.0 );
