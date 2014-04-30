@@ -30,7 +30,7 @@ var options = {
 var gui = new dat.GUI();
 
 var imageController = gui.add( options, 'image', [ 'image1.jpg', 'image2.jpg', 'image3.jpg' ] );
-var groupController = gui.add( options, 'group', [ 'tetrahedron', 'cube', 'icosahedron', 'none' ] );
+var groupController = gui.add( options, 'group', [ 'tetrahedron', 'tetrahedronMirror', 'cube', 'cubeMirror', 'icosahedron', 'none' ] );
 var sphereController = gui.add( options, 'sphere' );
 var shiftXController = gui.add( options, 'shiftX', 0, 1.0 );
 var shiftYController = gui.add( options, 'shiftY', 0, 1.0 );
