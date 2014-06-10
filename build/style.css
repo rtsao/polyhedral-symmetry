@@ -1,0 +1,32 @@
+body,
+html {
+  margin: 0;
+  padding: 0;
+  background: #000000;
+}
+canvas {
+  display: block;
+}
+.info {
+  position: fixed;
+  right: 30px;
+  bottom: 30px;
+  padding: none;
+  font-family: 'Dosis', sans-serif;
+}
+.info li {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0 0;
+  color: rgba(128, 128, 128, 0.8);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+  text-align: right;
+  padding: 10px;
+  fonts-ize: 12px;
+}
+.info li a {
+  display: block;
+  width: 140px;
+  color: #b4b4b4;
+  text-decoration: none;
+}

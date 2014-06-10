@@ -44,7 +44,8 @@ var options = {
 	shiftX: 0.00,
 	shiftY: 0.00,
 	hue: 0.00,
-	saturation: 1.0
+	saturation: 1.0,
+	bgcolor: '#000000'
 }
 
 var gui = new dat.GUI();
@@ -56,6 +57,7 @@ var shiftXController = gui.add( options, 'shiftX', 0, 1.0 );
 var shiftYController = gui.add( options, 'shiftY', 0, 1.0 );
 var saturationController = gui.add( options, 'saturation', 0, 5.0 );
 var hueController = gui.add( options, 'hue', 0, 1.0 );
+var bgcolorController = gui.add( options, 'bgcolor' );
 
 imageController.onFinishChange( loadTextureSource );
 groupController.onFinishChange( loadTextureSource );
@@ -64,12 +66,14 @@ shiftYController.onChange( loadTextureSource );
 saturationController.onFinishChange( loadTextureSource );
 hueController.onFinishChange( loadTextureSource );
 sphereController.onFinishChange( render );
+bgcolorController.onFinishChange( changeBackgroundColor );
 
 function init() {
 	//Renderer Setup
 	renderer = new THREE.WebGLRenderer({
 		antialias: true,
-		preserveDrawingBuffer: true
+		preserveDrawingBuffer: true,
+		alpha: true
 	});
 
 	renderer.setSize( WIDTH, HEIGHT );
@@ -115,7 +119,7 @@ function init() {
 }
 
 function initTexture() {
-	renderer.setClearColorHex( 0xffffff, 1 );
+	renderer.setClearColor( 0x000000, 0 );
 	RTtexture = new THREE.WebGLRenderTarget( WIDTH, HEIGHT, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 
 	RTcamera = new THREE.OrthographicCamera( -WIDTH/2, WIDTH/2, HEIGHT/2, -HEIGHT/2, 1, 100 );
@@ -166,12 +170,15 @@ function render() {
 	else {
 		renderer.render( RTscene, RTcamera );
 	}
-	
 
 }
 
 function loadTextureSource() {
 	texture = THREE.ImageUtils.loadTexture( options.image, null, renderTexture );
+}
+
+function changeBackgroundColor() {
+	document.body.style.background = options.bgcolor;
 }
 
 init();
