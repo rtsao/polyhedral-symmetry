@@ -5,11 +5,15 @@ var gulp = require('gulp')
 ,	imagemin = require('gulp-imagemin')
 ,	streamify = require('gulp-streamify')
 ,	less = require('gulp-less')
+,	express = require('express')
+,	cache = require('gulp-cache')
+,	plumber = require('gulp-plumber')
 
 
 gulp.task('scripts', function() {
 	return browserify('./src/app.js').transform('brfs')
 		.bundle()
+		.pipe(plumber())
 		.pipe(source('bundle.js'))
 		.pipe(streamify(uglify()))
 		.pipe(gulp.dest('build/'))
@@ -17,7 +21,7 @@ gulp.task('scripts', function() {
 
 gulp.task('images', function() {
 	return gulp.src('src/img/*.*')
-		.pipe(imagemin())
+		.pipe(cache(imagemin()))
 		.pipe(gulp.dest('build/'))
 })
 
@@ -28,9 +32,16 @@ gulp.task('html', function() {
 
 gulp.task('less', function() {
 	return gulp.src('src/style.less')
+		.pipe(plumber())
 		.pipe(less())
 		.pipe(gulp.dest('build/'))
-})
+});
+
+gulp.task('server', function() {
+	var server = express();
+	server.use(express.static('build'));
+	server.listen(3141);
+});
 
 gulp.task('watch', function() {
 	gulp.watch(['src/*', '!src/index.html', '!src/style.less'], ['scripts']);
@@ -39,4 +50,6 @@ gulp.task('watch', function() {
 	gulp.watch('src/style.less', ['less']);
 });
 
-gulp.task('default', ['scripts', 'images', 'html', 'less', 'watch']);
+
+
+gulp.task('default', ['scripts', 'images', 'html', 'less', 'watch', 'server']);
