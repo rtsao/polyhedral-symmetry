@@ -41,6 +41,7 @@ gulp.task('server', function() {
 	var server = express();
 	server.use(express.static('build'));
 	server.listen(3141);
+	console.log('server at http://localhost:31341');
 });
 
 gulp.task('watch', function() {

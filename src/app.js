@@ -1,8 +1,8 @@
-var fs = require('fs')
-,	groups = require('./symmetryGroups')
-,	THREE = require('three')
-,	dat = require('dat-gui')
-,	orbitControls = require('./OrbitControls');
+var fs = require('fs');
+var groups = require('./symmetryGroups');
+var THREE = require('three');
+var dat = require('dat-gui');
+var orbitControls = require('./OrbitControls');
 
 var shader = {
 	vertex: fs.readFileSync( __dirname + '/painting.vertex.glsl', 'utf8' ),
